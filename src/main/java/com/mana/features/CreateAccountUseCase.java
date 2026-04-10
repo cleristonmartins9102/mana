@@ -5,21 +5,25 @@ import com.mana.domain.Encrypt;
 import com.mana.domain.Hash;
 import com.mana.domain.models.Account;
 import com.mana.domain.models.TokenPayload;
+import com.mana.features.contract.SaveAccountRepository;
 
 public class CreateAccountUseCase implements CreateAccount{
   private Hash bcryptAdapter;
   private Encrypt jsonWebTokenAdapter;
+  private SaveAccountRepository accountRepository;
 
-  public CreateAccountUseCase(Hash bcryptAdapter, Encrypt jsonWebTokenAdapter) {
+  public CreateAccountUseCase(Hash bcryptAdapter, Encrypt jsonWebTokenAdapter, SaveAccountRepository accountRepository) {
     this.bcryptAdapter = bcryptAdapter;
     this.jsonWebTokenAdapter = jsonWebTokenAdapter;
+    this.accountRepository = accountRepository;
   }
 
   @Override
-  public Account create(String firstName, String SecondName, String email, String password) {
+  public Account create(String firstName, String secondName, String email, String password) {
     final String hashPassword = this.bcryptAdapter.hash(password);
-    final TokenPayload token = new TokenPayload("", "", "");
-    final String token = this.jsonWebTokenAdapter.encrypt(null)
+    final TokenPayload payload = new TokenPayload(firstName, secondName, email);
+    final String token = this.jsonWebTokenAdapter.encrypt(payload);
+    this.accountRepository.save(firstName);
     return null;
   }
 }
