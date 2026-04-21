@@ -23,7 +23,7 @@ public class CreateAccountUseCase implements CreateAccount{
     final String hashPassword = this.bcryptAdapter.hash(password);
     final TokenPayload payload = new TokenPayload(firstName, secondName, email);
     final String token = this.jsonWebTokenAdapter.encrypt(payload);
-    this.accountRepository.save(firstName);
+    final String accountId = this.accountRepository.save(firstName);
     return null;
   }
 }
