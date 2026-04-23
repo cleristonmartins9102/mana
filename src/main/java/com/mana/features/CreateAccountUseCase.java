@@ -22,7 +22,7 @@ public class CreateAccountUseCase implements CreateAccount{
   @Override
   public Account create(CreateAccountDTO createAccountData) {
     final String hashPassword = this.bcryptAdapter.hash(createAccountData.password());
-    final TokenPayload payload = new TokenPayload(createAccountData., secondName, email);
+    final TokenPayload payload = new TokenPayload(createAccountData.firstName(), createAccountData.surName(), createAccountData.email());
     final String token = this.jsonWebTokenAdapter.encrypt(payload);
     final String accountId = this.accountRepository.save(firstName);
     return null;
