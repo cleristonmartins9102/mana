@@ -1,10 +1,10 @@
 package mana.mana33.domain.models;
 
 public class TokenPayloadDTO {
-    String id = null;
-    String firstName;
-    String lastName;
-    String email;
+    public String id = null;
+    public String firstName;
+    public String lastName;
+    public String email;
 
     public String getId() {
         return id;
