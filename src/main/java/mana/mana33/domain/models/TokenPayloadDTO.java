@@ -5,4 +5,20 @@ public class TokenPayloadDTO {
     String firstName;
     String lastName;
     String email;
+
+    public String getId() {
+        return id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
 }

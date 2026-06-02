@@ -1,4 +1,4 @@
-package mana.mana33.controller.http;
+package mana33.controller.http;
 
 public class HttpRequest<B, Q> {
     B body = null;

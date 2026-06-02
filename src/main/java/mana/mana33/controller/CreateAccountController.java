@@ -1,4 +1,4 @@
-package mana.mana33.controller;
+package mana33.controller;
 
 import mana.mana33.domain.models.CreateAccountDTO;
 import mana.mana33.controller.contracts.Controller;
@@ -11,9 +11,6 @@ public class CreateAccountController
     @Override
     public HttpResponse<String> perform(
             HttpRequest<CreateAccountDTO, Void> input) {
-
-
-
         return null;
     }
 }
