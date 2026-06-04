@@ -94,4 +94,15 @@ class MySqlSaveUserRepositoryTest {
         AccountEntity entity = entityCaptor.getValue();
         assertNull(entity.getRefreshToken());
     }
+
+    @Test
+    void shouldCreateNewEntityForEachSave() {
+        SaveUserModel model1 = new SaveUserModel("User1", "Last1", "user1@example.com", "pass1", "111", "token1");
+        SaveUserModel model2 = new SaveUserModel("User2", "Last2", "user2@example.com", "pass2", "222", "token2");
+
+        mySqlSaveUserRepository.save(model1);
+        mySqlSaveUserRepository.save(model2);
+
+        verify(jpaAccountRepository, times(2)).save(any(AccountEntity.class));
+    }
 }
