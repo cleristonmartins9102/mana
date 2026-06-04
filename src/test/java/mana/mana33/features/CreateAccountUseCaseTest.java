@@ -122,4 +122,29 @@ class CreateAccountUseCaseTest {
             model.refreshToken().equals("refresh_token_xyz")
         ));
     }
+
+    @Test
+    void shouldCallSaveRepositoryAfterGeneratingToken() {
+        Hash hasher = mock(Hash.class);
+        Encrypt encrypter = mock(Encrypt.class);
+        SaveUserRepository saveUserRepository = mock(SaveUserRepository.class);
+
+        when(hasher.hash(any())).thenReturn("hashed");
+        when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("token");
+
+        CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository);
+        CreateAccountDTO dto = new CreateAccountDTO(
+            "Alice",
+            "Williams",
+            "alice@example.com",
+            "pass",
+            "1111111111"
+        );
+
+        useCase.create(dto);
+
+        var inOrder = inOrder(encrypter, saveUserRepository);
+        inOrder.verify(encrypter).encrypt(any(TokenPayloadDTO.class));
+        inOrder.verify(saveUserRepository).save(any());
+    }
 }
