@@ -58,4 +58,20 @@ class MySqlSaveUserRepositoryTest {
 
         verify(jpaAccountRepository, times(1)).save(any(AccountEntity.class));
     }
+
+    @Test
+    void shouldMapAllFieldsFromModelToEntity() {
+        mySqlSaveUserRepository.save(saveUserModel);
+
+        ArgumentCaptor<AccountEntity> entityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
+        verify(jpaAccountRepository).save(entityCaptor.capture());
+
+        AccountEntity entity = entityCaptor.getValue();
+        assertEquals(saveUserModel.firstName(), entity.getFirstName());
+        assertEquals(saveUserModel.secondName(), entity.getSecondName());
+        assertEquals(saveUserModel.email(), entity.getEmail());
+        assertEquals(saveUserModel.password(), entity.getPassword());
+        assertEquals(saveUserModel.mobileNumber(), entity.getMobileNumber());
+        assertEquals(saveUserModel.refreshToken(), entity.getRefreshToken());
+    }
 }
