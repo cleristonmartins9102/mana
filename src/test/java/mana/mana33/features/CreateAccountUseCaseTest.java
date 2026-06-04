@@ -71,4 +71,30 @@ class CreateAccountUseCaseTest {
             model.refreshToken().equals("generated_token")
         ));
     }
+
+    @Test
+    void shouldSaveHashedPasswordNotPlainPassword() {
+        Hash hasher = mock(Hash.class);
+        Encrypt encrypter = mock(Encrypt.class);
+        SaveUserRepository saveUserRepository = mock(SaveUserRepository.class);
+
+        when(hasher.hash("plain_password")).thenReturn("hashed_password");
+        when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("token");
+
+        CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository);
+        CreateAccountDTO dto = new CreateAccountDTO(
+            "Jane",
+            "Smith",
+            "jane@example.com",
+            "plain_password",
+            "9876543210"
+        );
+
+        useCase.create(dto);
+
+        verify(saveUserRepository).save(argThat(model ->
+            model.password().equals("hashed_password") &&
+            !model.password().equals("plain_password")
+        ));
+    }
 }
