@@ -74,4 +74,24 @@ class MySqlSaveUserRepositoryTest {
         assertEquals(saveUserModel.mobileNumber(), entity.getMobileNumber());
         assertEquals(saveUserModel.refreshToken(), entity.getRefreshToken());
     }
+
+    @Test
+    void shouldHandleNullRefreshToken() {
+        SaveUserModel modelWithNullToken = new SaveUserModel(
+                "Jane",
+                "Smith",
+                "jane.smith@example.com",
+                "password456",
+                "+9876543210",
+                null
+        );
+
+        mySqlSaveUserRepository.save(modelWithNullToken);
+
+        ArgumentCaptor<AccountEntity> entityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
+        verify(jpaAccountRepository).save(entityCaptor.capture());
+
+        AccountEntity entity = entityCaptor.getValue();
+        assertNull(entity.getRefreshToken());
+    }
 }
