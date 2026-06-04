@@ -1,7 +1,7 @@
 package mana.mana33.domain;
 
-import mana.mana33.domain.models.CreateAccountDTO;
+import mana.mana33.domain.models.SaveUserModel;
 
 public interface SaveUserRepository {
-    void save(CreateAccountDTO account);
+    void save(SaveUserModel model);
 }
