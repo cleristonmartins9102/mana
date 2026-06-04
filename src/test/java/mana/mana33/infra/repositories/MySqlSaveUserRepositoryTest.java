@@ -51,4 +51,11 @@ class MySqlSaveUserRepositoryTest {
         assertEquals("+1234567890", capturedEntity.getMobileNumber());
         assertEquals("refresh-token-xyz", capturedEntity.getRefreshToken());
     }
+
+    @Test
+    void shouldCallJpaRepositorySaveOnce() {
+        mySqlSaveUserRepository.save(saveUserModel);
+
+        verify(jpaAccountRepository, times(1)).save(any(AccountEntity.class));
+    }
 }
