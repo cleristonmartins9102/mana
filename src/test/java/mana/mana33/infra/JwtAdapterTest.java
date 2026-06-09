@@ -150,6 +150,17 @@ class JwtAdapterTest {
         assertEquals("user-123", decryptedId);
     }
 
+    @Test
+    void shouldDecryptValidTokenWithAllClaims() {
+        TokenPayloadDTO payload = createTestPayload();
+        payload.id = "456";
+
+        String token = jwtAdapter.encrypt(payload);
+        String decryptedId = jwtAdapter.decrypt(token);
+
+        assertEquals("456", decryptedId);
+    }
+
     private TokenPayloadDTO createTestPayload() {
         TokenPayloadDTO payload = new TokenPayloadDTO();
         payload.firstName = "John";
