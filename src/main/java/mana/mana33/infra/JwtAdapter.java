@@ -1,7 +1,9 @@
 package mana.mana33.infra;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import mana.mana33.domain.Decrypter;
 import mana.mana33.domain.Encrypt;
 import mana.mana33.domain.models.TokenPayloadDTO;
 
@@ -9,7 +11,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-public class JwtAdapter implements Encrypt {
+public class JwtAdapter implements Encrypt, Decrypter {
     private final SecretKey key;
     private final long expirationTime;
 
@@ -33,5 +35,16 @@ public class JwtAdapter implements Encrypt {
                 .expiration(expiration)
                 .signWith(key)
                 .compact();
+    }
+
+    @Override
+    public String decrypt(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("id", String.class);
     }
 }
