@@ -161,6 +161,15 @@ class JwtAdapterTest {
         assertEquals("456", decryptedId);
     }
 
+    @Test
+    void shouldThrowExceptionWhenDecryptingInvalidToken() {
+        String invalidToken = "invalid.token.here";
+
+        assertThrows(Exception.class, () -> {
+            jwtAdapter.decrypt(invalidToken);
+        });
+    }
+
     private TokenPayloadDTO createTestPayload() {
         TokenPayloadDTO payload = new TokenPayloadDTO();
         payload.firstName = "John";
