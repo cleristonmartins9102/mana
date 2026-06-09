@@ -170,6 +170,20 @@ class JwtAdapterTest {
         });
     }
 
+    @Test
+    void shouldThrowExceptionWhenDecryptingTokenWithWrongSecret() {
+        TokenPayloadDTO payload = createTestPayload();
+        payload.id = "789";
+        String token = jwtAdapter.encrypt(payload);
+
+        String differentSecret = "different-secret-key-with-at-least-32-characters-for-hs256";
+        JwtAdapter differentAdapter = new JwtAdapter(differentSecret, expirationTime);
+
+        assertThrows(Exception.class, () -> {
+            differentAdapter.decrypt(token);
+        });
+    }
+
     private TokenPayloadDTO createTestPayload() {
         TokenPayloadDTO payload = new TokenPayloadDTO();
         payload.firstName = "John";
