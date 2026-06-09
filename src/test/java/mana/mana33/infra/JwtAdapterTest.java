@@ -184,6 +184,17 @@ class JwtAdapterTest {
         });
     }
 
+    @Test
+    void shouldDecryptTokenAndReturnNullWhenIdIsNull() {
+        TokenPayloadDTO payload = createTestPayload();
+        payload.id = null;
+
+        String token = jwtAdapter.encrypt(payload);
+        String decryptedId = jwtAdapter.decrypt(token);
+
+        assertNull(decryptedId);
+    }
+
     private TokenPayloadDTO createTestPayload() {
         TokenPayloadDTO payload = new TokenPayloadDTO();
         payload.firstName = "John";
