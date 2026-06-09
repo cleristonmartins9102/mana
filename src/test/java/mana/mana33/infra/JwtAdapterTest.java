@@ -139,6 +139,17 @@ class JwtAdapterTest {
         });
     }
 
+    @Test
+    void shouldDecryptTokenAndReturnUserId() {
+        TokenPayloadDTO payload = createTestPayload();
+        payload.id = "user-123";
+
+        String token = jwtAdapter.encrypt(payload);
+        String decryptedId = jwtAdapter.decrypt(token);
+
+        assertEquals("user-123", decryptedId);
+    }
+
     private TokenPayloadDTO createTestPayload() {
         TokenPayloadDTO payload = new TokenPayloadDTO();
         payload.firstName = "John";
