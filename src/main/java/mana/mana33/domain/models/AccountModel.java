@@ -5,6 +5,8 @@ public record AccountModel(
     String firstName,
     String secondName,
     String email,
-    String mobileNumber
+    String mobileNumber,
+    String token,
+    String refreshToken
 ) {
 }
