@@ -1,5 +1,6 @@
 package mana.mana33.infra.repositories;
 
+import mana.mana33.domain.models.AccountModel;
 import mana.mana33.domain.models.SaveUserModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,9 @@ class MySqlSaveUserRepositoryTest {
 
     @Test
     void shouldSaveUserModelAsAccountEntity() {
+        AccountEntity savedEntity = createSavedEntity();
+        when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
+
         mySqlSaveUserRepository.save(saveUserModel);
 
         ArgumentCaptor<AccountEntity> entityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
@@ -54,6 +58,9 @@ class MySqlSaveUserRepositoryTest {
 
     @Test
     void shouldCallJpaRepositorySaveOnce() {
+        AccountEntity savedEntity = createSavedEntity();
+        when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
+
         mySqlSaveUserRepository.save(saveUserModel);
 
         verify(jpaAccountRepository, times(1)).save(any(AccountEntity.class));
@@ -61,6 +68,9 @@ class MySqlSaveUserRepositoryTest {
 
     @Test
     void shouldMapAllFieldsFromModelToEntity() {
+        AccountEntity savedEntity = createSavedEntity();
+        when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
+
         mySqlSaveUserRepository.save(saveUserModel);
 
         ArgumentCaptor<AccountEntity> entityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
@@ -86,6 +96,9 @@ class MySqlSaveUserRepositoryTest {
                 null
         );
 
+        AccountEntity savedEntity = createSavedEntity();
+        when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
+
         mySqlSaveUserRepository.save(modelWithNullToken);
 
         ArgumentCaptor<AccountEntity> entityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
@@ -100,9 +113,39 @@ class MySqlSaveUserRepositoryTest {
         SaveUserModel model1 = new SaveUserModel("User1", "Last1", "user1@example.com", "pass1", "111", "token1");
         SaveUserModel model2 = new SaveUserModel("User2", "Last2", "user2@example.com", "pass2", "222", "token2");
 
+        AccountEntity savedEntity = createSavedEntity();
+        when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
+
         mySqlSaveUserRepository.save(model1);
         mySqlSaveUserRepository.save(model2);
 
         verify(jpaAccountRepository, times(2)).save(any(AccountEntity.class));
+    }
+
+    @Test
+    void shouldReturnAccountModelAfterSave() {
+        AccountEntity savedEntity = createSavedEntity();
+        when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
+
+        AccountModel result = mySqlSaveUserRepository.save(saveUserModel);
+
+        assertNotNull(result);
+        assertEquals("123", result.id());
+        assertEquals("John", result.firstName());
+        assertEquals("Doe", result.secondName());
+        assertEquals("john.doe@example.com", result.email());
+        assertEquals("+1234567890", result.mobileNumber());
+    }
+
+    private AccountEntity createSavedEntity() {
+        AccountEntity entity = new AccountEntity();
+        entity.setId(123L);
+        entity.setFirstName("John");
+        entity.setSecondName("Doe");
+        entity.setEmail("john.doe@example.com");
+        entity.setPassword("password123");
+        entity.setMobileNumber("+1234567890");
+        entity.setRefreshToken("refresh-token-xyz");
+        return entity;
     }
 }
