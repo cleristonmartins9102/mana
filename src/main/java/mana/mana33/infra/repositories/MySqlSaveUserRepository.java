@@ -1,6 +1,7 @@
 package mana.mana33.infra.repositories;
 
 import mana.mana33.domain.SaveUserRepository;
+import mana.mana33.domain.models.AccountModel;
 import mana.mana33.domain.models.SaveUserModel;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +15,7 @@ public class MySqlSaveUserRepository implements SaveUserRepository {
     }
 
     @Override
-    public void save(SaveUserModel model) {
+    public AccountModel save(SaveUserModel model) {
         AccountEntity entity = new AccountEntity();
         entity.setFirstName(model.firstName());
         entity.setSecondName(model.secondName());
@@ -23,6 +24,14 @@ public class MySqlSaveUserRepository implements SaveUserRepository {
         entity.setMobileNumber(model.mobileNumber());
         entity.setRefreshToken(model.refreshToken());
 
-        jpaAccountRepository.save(entity);
+        AccountEntity savedEntity = jpaAccountRepository.save(entity);
+
+        return new AccountModel(
+            savedEntity.getId().toString(),
+            savedEntity.getFirstName(),
+            savedEntity.getSecondName(),
+            savedEntity.getEmail(),
+            savedEntity.getMobileNumber()
+        );
     }
 }
