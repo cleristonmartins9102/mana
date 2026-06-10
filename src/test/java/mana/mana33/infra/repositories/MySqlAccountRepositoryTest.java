@@ -14,13 +14,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class MySqlSaveUserRepositoryTest {
+class MySqlAccountRepositoryTest {
 
     @Mock
     private JpaAccountRepository jpaAccountRepository;
 
     @InjectMocks
-    private MySqlSaveUserRepository mySqlSaveUserRepository;
+    private MySqlAccountRepository mySqlAccountRepository;
 
     private SaveUserModel saveUserModel;
 
@@ -41,7 +41,7 @@ class MySqlSaveUserRepositoryTest {
         AccountEntity savedEntity = createSavedEntity();
         when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
 
-        mySqlSaveUserRepository.save(saveUserModel);
+        mySqlAccountRepository.save(saveUserModel);
 
         ArgumentCaptor<AccountEntity> entityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
         verify(jpaAccountRepository, times(1)).save(entityCaptor.capture());
@@ -61,7 +61,7 @@ class MySqlSaveUserRepositoryTest {
         AccountEntity savedEntity = createSavedEntity();
         when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
 
-        mySqlSaveUserRepository.save(saveUserModel);
+        mySqlAccountRepository.save(saveUserModel);
 
         verify(jpaAccountRepository, times(1)).save(any(AccountEntity.class));
     }
@@ -71,7 +71,7 @@ class MySqlSaveUserRepositoryTest {
         AccountEntity savedEntity = createSavedEntity();
         when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
 
-        mySqlSaveUserRepository.save(saveUserModel);
+        mySqlAccountRepository.save(saveUserModel);
 
         ArgumentCaptor<AccountEntity> entityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
         verify(jpaAccountRepository).save(entityCaptor.capture());
@@ -99,7 +99,7 @@ class MySqlSaveUserRepositoryTest {
         AccountEntity savedEntity = createSavedEntity();
         when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
 
-        mySqlSaveUserRepository.save(modelWithNullToken);
+        mySqlAccountRepository.save(modelWithNullToken);
 
         ArgumentCaptor<AccountEntity> entityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
         verify(jpaAccountRepository).save(entityCaptor.capture());
@@ -116,8 +116,8 @@ class MySqlSaveUserRepositoryTest {
         AccountEntity savedEntity = createSavedEntity();
         when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
 
-        mySqlSaveUserRepository.save(model1);
-        mySqlSaveUserRepository.save(model2);
+        mySqlAccountRepository.save(model1);
+        mySqlAccountRepository.save(model2);
 
         verify(jpaAccountRepository, times(2)).save(any(AccountEntity.class));
     }
@@ -127,7 +127,7 @@ class MySqlSaveUserRepositoryTest {
         AccountEntity savedEntity = createSavedEntity();
         when(jpaAccountRepository.save(any(AccountEntity.class))).thenReturn(savedEntity);
 
-        AccountModel result = mySqlSaveUserRepository.save(saveUserModel);
+        AccountModel result = mySqlAccountRepository.save(saveUserModel);
 
         assertNotNull(result);
         assertEquals("123", result.id());
@@ -135,6 +135,8 @@ class MySqlSaveUserRepositoryTest {
         assertEquals("Doe", result.secondName());
         assertEquals("john.doe@example.com", result.email());
         assertEquals("+1234567890", result.mobileNumber());
+        assertNull(result.token());
+        assertEquals("refresh-token-xyz", result.refreshToken());
     }
 
     private AccountEntity createSavedEntity() {
