@@ -4,6 +4,8 @@ import mana.mana33.domain.CreateAccount;
 import mana.mana33.domain.Encrypt;
 import mana.mana33.domain.Hash;
 import mana.mana33.domain.SaveUserRepository;
+import mana.mana33.domain.UpdateAccountRepository;
+import mana.mana33.domain.models.AccountModel;
 import mana.mana33.domain.models.CreateAccountDTO;
 import mana.mana33.domain.models.SaveUserModel;
 import mana.mana33.domain.models.TokenPayloadDTO;
@@ -12,15 +14,19 @@ public class CreateAccountUseCase implements CreateAccount {
     private final Hash hasher;
     private final Encrypt encrypter;
     private final SaveUserRepository saveUserRepository;
+    private final UpdateAccountRepository updateAccountRepository;
+    private final Encrypt refreshTokenGenerator;
 
-    public  CreateAccountUseCase(Hash hasher, Encrypt encrypter, SaveUserRepository saveUserRepository) {
+    public  CreateAccountUseCase(Hash hasher, Encrypt encrypter, SaveUserRepository saveUserRepository, UpdateAccountRepository updateAccountRepository, Encrypt refreshTokenGenerator) {
         this.hasher = hasher;
         this.encrypter = encrypter;
         this.saveUserRepository = saveUserRepository;
+        this.updateAccountRepository = updateAccountRepository;
+        this.refreshTokenGenerator = refreshTokenGenerator;
     }
 
     @Override
-    public void create(CreateAccountDTO createAccountDTO) {
+    public AccountModel create(CreateAccountDTO createAccountDTO) {
         String hashedPassword = this.hasher.hash(createAccountDTO.password());
 
         TokenPayloadDTO payload = new TokenPayloadDTO();
@@ -39,6 +45,26 @@ public class CreateAccountUseCase implements CreateAccount {
                 token
         );
 
-        this.saveUserRepository.save(saveUserModel);
+        AccountModel savedAccount = this.saveUserRepository.save(saveUserModel);
+
+        TokenPayloadDTO refreshPayload = new TokenPayloadDTO();
+        refreshPayload.id = savedAccount.id();
+        refreshPayload.firstName = savedAccount.firstName();
+        refreshPayload.lastName = savedAccount.secondName();
+        refreshPayload.email = savedAccount.email();
+
+        String refreshToken = this.refreshTokenGenerator.encrypt(refreshPayload);
+
+        AccountModel updatedAccount = new AccountModel(
+                savedAccount.id(),
+                savedAccount.firstName(),
+                savedAccount.secondName(),
+                savedAccount.email(),
+                savedAccount.mobileNumber(),
+                savedAccount.token(),
+                refreshToken
+        );
+
+        return this.updateAccountRepository.update(savedAccount.id(), updatedAccount);
     }
 }
