@@ -3,6 +3,7 @@ package mana.mana33.features;
 import mana.mana33.domain.Encrypt;
 import mana.mana33.domain.Hash;
 import mana.mana33.domain.SaveUserRepository;
+import mana.mana33.domain.models.AccountModel;
 import mana.mana33.domain.models.CreateAccountDTO;
 import mana.mana33.domain.models.TokenPayloadDTO;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ class CreateAccountUseCaseTest {
 
         when(hasher.hash(any())).thenReturn("hashed_password");
         when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("generated_token");
+        when(saveUserRepository.save(any())).thenReturn(new AccountModel("1", "John", "Doe", "john.doe@example.com", "1234567890"));
 
         CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository);
         CreateAccountDTO dto = new CreateAccountDTO(
@@ -50,6 +52,7 @@ class CreateAccountUseCaseTest {
 
         when(hasher.hash("password123")).thenReturn("hashed_password");
         when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("generated_token");
+        when(saveUserRepository.save(any())).thenReturn(new AccountModel("1", "John", "Doe", "john.doe@example.com", "1234567890"));
 
         CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository);
         CreateAccountDTO dto = new CreateAccountDTO(
@@ -80,6 +83,7 @@ class CreateAccountUseCaseTest {
 
         when(hasher.hash("plain_password")).thenReturn("hashed_password");
         when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("token");
+        when(saveUserRepository.save(any())).thenReturn(new AccountModel("1", "Jane", "Smith", "jane@example.com", "9876543210"));
 
         CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository);
         CreateAccountDTO dto = new CreateAccountDTO(
@@ -106,6 +110,7 @@ class CreateAccountUseCaseTest {
 
         when(hasher.hash(any())).thenReturn("hashed");
         when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("refresh_token_xyz");
+        when(saveUserRepository.save(any())).thenReturn(new AccountModel("1", "Bob", "Johnson", "bob@example.com", "5555555555"));
 
         CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository);
         CreateAccountDTO dto = new CreateAccountDTO(
@@ -131,6 +136,7 @@ class CreateAccountUseCaseTest {
 
         when(hasher.hash(any())).thenReturn("hashed");
         when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("token");
+        when(saveUserRepository.save(any())).thenReturn(new AccountModel("1", "Alice", "Williams", "alice@example.com", "1111111111"));
 
         CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository);
         CreateAccountDTO dto = new CreateAccountDTO(
