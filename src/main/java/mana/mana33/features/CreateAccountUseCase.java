@@ -5,6 +5,7 @@ import mana.mana33.domain.Encrypt;
 import mana.mana33.domain.Hash;
 import mana.mana33.domain.SaveUserRepository;
 import mana.mana33.domain.UpdateAccountRepository;
+import mana.mana33.domain.exceptions.TokenGenerationException;
 import mana.mana33.domain.models.AccountModel;
 import mana.mana33.domain.models.CreateAccountDTO;
 import mana.mana33.domain.models.SaveUserModel;
@@ -34,7 +35,12 @@ public class CreateAccountUseCase implements CreateAccount {
         payload.lastName = createAccountDTO.secondName();
         payload.email = createAccountDTO.email();
 
-        String token = this.encrypter.encrypt(payload);
+        String token;
+        try {
+            token = this.encrypter.encrypt(payload);
+        } catch (Exception e) {
+            throw new TokenGenerationException("Failed to generate access token", e);
+        }
 
         SaveUserModel saveUserModel = new SaveUserModel(
                 createAccountDTO.firstName(),
@@ -53,7 +59,12 @@ public class CreateAccountUseCase implements CreateAccount {
         refreshPayload.lastName = savedAccount.secondName();
         refreshPayload.email = savedAccount.email();
 
-        String refreshToken = this.refreshTokenGenerator.encrypt(refreshPayload);
+        String refreshToken;
+        try {
+            refreshToken = this.refreshTokenGenerator.encrypt(refreshPayload);
+        } catch (Exception e) {
+            throw new TokenGenerationException("Failed to generate refresh token for account: " + savedAccount.id(), e);
+        }
 
         AccountModel updatedAccount = new AccountModel(
                 savedAccount.id(),
