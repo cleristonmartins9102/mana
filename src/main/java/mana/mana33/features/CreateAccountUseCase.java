@@ -5,6 +5,7 @@ import mana.mana33.domain.Encrypt;
 import mana.mana33.domain.Hash;
 import mana.mana33.domain.SaveUserRepository;
 import mana.mana33.domain.UpdateAccountRepository;
+import mana.mana33.domain.exceptions.AccountSaveException;
 import mana.mana33.domain.exceptions.TokenGenerationException;
 import mana.mana33.domain.models.AccountModel;
 import mana.mana33.domain.models.CreateAccountDTO;
@@ -51,7 +52,12 @@ public class CreateAccountUseCase implements CreateAccount {
                 token
         );
 
-        AccountModel savedAccount = this.saveUserRepository.save(saveUserModel);
+        AccountModel savedAccount;
+        try {
+            savedAccount = this.saveUserRepository.save(saveUserModel);
+        } catch (Exception e) {
+            throw new AccountSaveException("Failed to save account for email: " + createAccountDTO.email(), e);
+        }
 
         TokenPayloadDTO refreshPayload = new TokenPayloadDTO();
         refreshPayload.id = savedAccount.id();
@@ -76,6 +82,10 @@ public class CreateAccountUseCase implements CreateAccount {
                 refreshToken
         );
 
-        return this.updateAccountRepository.update(savedAccount.id(), updatedAccount);
+        try {
+            return this.updateAccountRepository.update(savedAccount.id(), updatedAccount);
+        } catch (Exception e) {
+            throw new AccountSaveException("Failed to update account with refresh token for account ID: " + savedAccount.id(), e);
+        }
     }
 }
