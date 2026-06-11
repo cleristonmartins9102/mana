@@ -4,6 +4,7 @@ import mana.mana33.domain.Encrypt;
 import mana.mana33.domain.Hash;
 import mana.mana33.domain.SaveUserRepository;
 import mana.mana33.domain.UpdateAccountRepository;
+import mana.mana33.domain.exceptions.TokenGenerationException;
 import mana.mana33.domain.models.AccountModel;
 import mana.mana33.domain.models.CreateAccountDTO;
 import mana.mana33.domain.models.TokenPayloadDTO;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -247,5 +249,65 @@ class CreateAccountUseCaseTest {
         assert result.mobileNumber().equals("9999999999");
         assert result.token().equals("access_token");
         assert result.refreshToken().equals("refresh_token_456");
+    }
+
+    @Test
+    void shouldThrowTokenGenerationExceptionWhenAccessTokenCreationFails() {
+        Hash hasher = mock(Hash.class);
+        Encrypt encrypter = mock(Encrypt.class);
+        SaveUserRepository saveUserRepository = mock(SaveUserRepository.class);
+        UpdateAccountRepository updateAccountRepository = mock(UpdateAccountRepository.class);
+        Encrypt refreshTokenGenerator = mock(Encrypt.class);
+
+        when(hasher.hash(any())).thenReturn("hashed");
+        when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenThrow(new RuntimeException("Encryption failed"));
+
+        CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository, updateAccountRepository, refreshTokenGenerator);
+        CreateAccountDTO dto = new CreateAccountDTO(
+            "John",
+            "Doe",
+            "john@example.com",
+            "password",
+            "1234567890"
+        );
+
+        TokenGenerationException exception = assertThrows(TokenGenerationException.class, () -> {
+            useCase.create(dto);
+        });
+
+        assertEquals("Failed to generate access token", exception.getMessage());
+        assertNotNull(exception.getCause());
+        assertTrue(exception.getCause() instanceof RuntimeException);
+    }
+
+    @Test
+    void shouldThrowTokenGenerationExceptionWhenRefreshTokenCreationFails() {
+        Hash hasher = mock(Hash.class);
+        Encrypt encrypter = mock(Encrypt.class);
+        SaveUserRepository saveUserRepository = mock(SaveUserRepository.class);
+        UpdateAccountRepository updateAccountRepository = mock(UpdateAccountRepository.class);
+        Encrypt refreshTokenGenerator = mock(Encrypt.class);
+
+        when(hasher.hash(any())).thenReturn("hashed");
+        when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("access_token");
+        when(saveUserRepository.save(any())).thenReturn(new AccountModel("789", "Jane", "Doe", "jane@example.com", "5555555555", "access_token", null));
+        when(refreshTokenGenerator.encrypt(any(TokenPayloadDTO.class))).thenThrow(new RuntimeException("Refresh token encryption failed"));
+
+        CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository, updateAccountRepository, refreshTokenGenerator);
+        CreateAccountDTO dto = new CreateAccountDTO(
+            "Jane",
+            "Doe",
+            "jane@example.com",
+            "password",
+            "5555555555"
+        );
+
+        TokenGenerationException exception = assertThrows(TokenGenerationException.class, () -> {
+            useCase.create(dto);
+        });
+
+        assertTrue(exception.getMessage().contains("Failed to generate refresh token for account: 789"));
+        assertNotNull(exception.getCause());
+        assertTrue(exception.getCause() instanceof RuntimeException);
     }
 }
