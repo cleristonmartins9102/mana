@@ -4,6 +4,7 @@ import mana.mana33.domain.Encrypt;
 import mana.mana33.domain.Hash;
 import mana.mana33.domain.SaveUserRepository;
 import mana.mana33.domain.UpdateAccountRepository;
+import mana.mana33.domain.exceptions.AccountSaveException;
 import mana.mana33.domain.exceptions.TokenGenerationException;
 import mana.mana33.domain.models.AccountModel;
 import mana.mana33.domain.models.CreateAccountDTO;
@@ -307,6 +308,68 @@ class CreateAccountUseCaseTest {
         });
 
         assertTrue(exception.getMessage().contains("Failed to generate refresh token for account: 789"));
+        assertNotNull(exception.getCause());
+        assertTrue(exception.getCause() instanceof RuntimeException);
+    }
+
+    @Test
+    void shouldThrowAccountSaveExceptionWhenSaveRepositoryFails() {
+        Hash hasher = mock(Hash.class);
+        Encrypt encrypter = mock(Encrypt.class);
+        SaveUserRepository saveUserRepository = mock(SaveUserRepository.class);
+        UpdateAccountRepository updateAccountRepository = mock(UpdateAccountRepository.class);
+        Encrypt refreshTokenGenerator = mock(Encrypt.class);
+
+        when(hasher.hash(any())).thenReturn("hashed");
+        when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("access_token");
+        when(saveUserRepository.save(any())).thenThrow(new RuntimeException("Database connection failed"));
+
+        CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository, updateAccountRepository, refreshTokenGenerator);
+        CreateAccountDTO dto = new CreateAccountDTO(
+            "John",
+            "Doe",
+            "john.doe@example.com",
+            "password",
+            "1234567890"
+        );
+
+        AccountSaveException exception = assertThrows(AccountSaveException.class, () -> {
+            useCase.create(dto);
+        });
+
+        assertTrue(exception.getMessage().contains("Failed to save account for email: john.doe@example.com"));
+        assertNotNull(exception.getCause());
+        assertTrue(exception.getCause() instanceof RuntimeException);
+    }
+
+    @Test
+    void shouldThrowAccountSaveExceptionWhenUpdateRepositoryFails() {
+        Hash hasher = mock(Hash.class);
+        Encrypt encrypter = mock(Encrypt.class);
+        SaveUserRepository saveUserRepository = mock(SaveUserRepository.class);
+        UpdateAccountRepository updateAccountRepository = mock(UpdateAccountRepository.class);
+        Encrypt refreshTokenGenerator = mock(Encrypt.class);
+
+        when(hasher.hash(any())).thenReturn("hashed");
+        when(encrypter.encrypt(any(TokenPayloadDTO.class))).thenReturn("access_token");
+        when(saveUserRepository.save(any())).thenReturn(new AccountModel("999", "Jane", "Smith", "jane@example.com", "9876543210", "access_token", null));
+        when(refreshTokenGenerator.encrypt(any(TokenPayloadDTO.class))).thenReturn("refresh_token");
+        when(updateAccountRepository.update(any(), any())).thenThrow(new RuntimeException("Update failed"));
+
+        CreateAccountUseCase useCase = new CreateAccountUseCase(hasher, encrypter, saveUserRepository, updateAccountRepository, refreshTokenGenerator);
+        CreateAccountDTO dto = new CreateAccountDTO(
+            "Jane",
+            "Smith",
+            "jane@example.com",
+            "password",
+            "9876543210"
+        );
+
+        AccountSaveException exception = assertThrows(AccountSaveException.class, () -> {
+            useCase.create(dto);
+        });
+
+        assertTrue(exception.getMessage().contains("Failed to update account with refresh token for account ID: 999"));
         assertNotNull(exception.getCause());
         assertTrue(exception.getCause() instanceof RuntimeException);
     }
