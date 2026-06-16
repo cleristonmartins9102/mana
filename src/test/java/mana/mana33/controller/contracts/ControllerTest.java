@@ -146,18 +146,18 @@ class ControllerTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenValidationFailsInHandler() {
+    void shouldReturn401WhenValidationFailsInHandler() {
         TestValidator validator = new TestValidator();
         TestControllerWithValidator controller = new TestControllerWithValidator(validator);
 
         HttpRequest<TestBody, Void> request = new HttpRequest<>();
         request.body = new TestBody("");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            controller.handler(request);
-        });
+        HttpResponse<String> response = controller.handler(request);
 
-        assertEquals("Invalid body", exception.getMessage());
+        assertNotNull(response);
+        assertEquals(401, response.statusCode);
+        assertNull(response.body);
     }
 
     @Test
@@ -175,15 +175,45 @@ class ControllerTest {
     }
 
     @Test
-    void shouldValidateBeforeExecutingPerform() {
+    void shouldReturn401WhenBodyIsNull() {
         TestValidator validator = new TestValidator();
         TestControllerWithValidator controller = new TestControllerWithValidator(validator);
 
         HttpRequest<TestBody, Void> requestWithInvalidBody = new HttpRequest<>();
         requestWithInvalidBody.body = new TestBody(null);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            controller.handler(requestWithInvalidBody);
-        });
+        HttpResponse<String> response = controller.handler(requestWithInvalidBody);
+
+        assertNotNull(response);
+        assertEquals(401, response.statusCode);
+    }
+
+    @Test
+    void shouldReturn401WhenBodyIsEmpty() {
+        TestValidator validator = new TestValidator();
+        TestControllerWithValidator controller = new TestControllerWithValidator(validator);
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("");
+
+        HttpResponse<String> response = controller.handler(request);
+
+        assertNotNull(response);
+        assertEquals(401, response.statusCode);
+    }
+
+    @Test
+    void shouldReturn200WhenValidationPasses() {
+        TestValidator validator = new TestValidator();
+        TestControllerWithValidator controller = new TestControllerWithValidator(validator);
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("Valid Body");
+
+        HttpResponse<String> response = controller.handler(request);
+
+        assertNotNull(response);
+        assertEquals(200, response.statusCode);
+        assertEquals("Success", response.body);
     }
 }
