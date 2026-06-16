@@ -12,6 +12,8 @@ public abstract class Controller<R, IB, IQ> {
     }
 
     public HttpResponse<R> handler(HttpRequest<IB, IQ> input) {
+        final Validate<IB> validator = this.getValidators();
+        validator.validate(input.body);
         return this.perform(input);
     }
 }
