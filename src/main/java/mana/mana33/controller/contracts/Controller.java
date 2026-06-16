@@ -22,7 +22,11 @@ public abstract class Controller<R, IB, IQ> {
         }
 
         try {
-            return this.perform(input);
+            HttpResponse<R> response = this.perform(input);
+            if (response.statusCode == null || response.statusCode == 0) {
+                response.statusCode = 200;
+            }
+            return response;
         } catch (Exception e) {
             HttpResponse<R> errorResponse = new HttpResponse<>();
             errorResponse.statusCode = 500;
