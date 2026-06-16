@@ -64,6 +64,15 @@ class ControllerTest {
         }
     }
 
+    private static class TestControllerWithoutStatusCode extends Controller<String, TestBody, Void> {
+        @Override
+        public HttpResponse<String> perform(HttpRequest<TestBody, Void> input) {
+            HttpResponse<String> response = new HttpResponse<>();
+            response.body = "Success without status code";
+            return response;
+        }
+    }
+
     @Test
     void shouldReturnDefaultEmptyValidator() {
         TestControllerWithoutValidator controller = new TestControllerWithoutValidator();
@@ -263,5 +272,60 @@ class ControllerTest {
 
         assertEquals(401, response.statusCode);
         assertNull(response.body);
+    }
+
+    @Test
+    void shouldReturn200WhenPerformDoesNotSetStatusCode() {
+        TestControllerWithoutStatusCode controller = new TestControllerWithoutStatusCode();
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("Test");
+
+        HttpResponse<String> response = controller.handler(request);
+
+        assertNotNull(response);
+        assertEquals(200, response.statusCode);
+        assertEquals("Success without status code", response.body);
+    }
+
+    @Test
+    void shouldReturn200WhenStatusCodeIsZero() {
+        Controller<String, TestBody, Void> controller = new Controller<String, TestBody, Void>() {
+            @Override
+            public HttpResponse<String> perform(HttpRequest<TestBody, Void> input) {
+                HttpResponse<String> response = new HttpResponse<>();
+                response.statusCode = 0;
+                response.body = "Test";
+                return response;
+            }
+        };
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("Test");
+
+        HttpResponse<String> response = controller.handler(request);
+
+        assertEquals(200, response.statusCode);
+    }
+
+    @Test
+    void shouldPreserveCustomStatusCode() {
+        Controller<String, TestBody, Void> controller = new Controller<String, TestBody, Void>() {
+            @Override
+            public HttpResponse<String> perform(HttpRequest<TestBody, Void> input) {
+                HttpResponse<String> response = new HttpResponse<>();
+                response.statusCode = 201;
+                response.body = "Created";
+                return response;
+            }
+        };
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("Test");
+
+        HttpResponse<String> response = controller.handler(request);
+
+        assertEquals(201, response.statusCode);
+        assertEquals("Created", response.body);
     }
 }
