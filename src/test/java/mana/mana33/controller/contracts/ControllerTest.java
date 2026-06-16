@@ -131,4 +131,59 @@ class ControllerTest {
         assertEquals(200, response.statusCode);
         assertEquals("Success", response.body);
     }
+
+    @Test
+    void shouldCallValidatorBeforePerform() {
+        TestValidator validator = new TestValidator();
+        TestControllerWithValidator controller = new TestControllerWithValidator(validator);
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("Valid");
+
+        assertDoesNotThrow(() -> {
+            controller.handler(request);
+        });
+    }
+
+    @Test
+    void shouldThrowExceptionWhenValidationFailsInHandler() {
+        TestValidator validator = new TestValidator();
+        TestControllerWithValidator controller = new TestControllerWithValidator(validator);
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            controller.handler(request);
+        });
+
+        assertEquals("Invalid body", exception.getMessage());
+    }
+
+    @Test
+    void shouldNotThrowExceptionWithDefaultValidatorInHandler() {
+        TestControllerWithoutValidator controller = new TestControllerWithoutValidator();
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("");
+
+        assertDoesNotThrow(() -> {
+            HttpResponse<String> response = controller.handler(request);
+            assertNotNull(response);
+            assertEquals(200, response.statusCode);
+        });
+    }
+
+    @Test
+    void shouldValidateBeforeExecutingPerform() {
+        TestValidator validator = new TestValidator();
+        TestControllerWithValidator controller = new TestControllerWithValidator(validator);
+
+        HttpRequest<TestBody, Void> requestWithInvalidBody = new HttpRequest<>();
+        requestWithInvalidBody.body = new TestBody(null);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            controller.handler(requestWithInvalidBody);
+        });
+    }
 }

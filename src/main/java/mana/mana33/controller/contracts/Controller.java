@@ -13,7 +13,13 @@ public abstract class Controller<R, IB, IQ> {
 
     public HttpResponse<R> handler(HttpRequest<IB, IQ> input) {
         final Validate<IB> validator = this.getValidators();
-        validator.validate(input.body);
+        try {
+            validator.validate(input.body);
+        } catch (Exception e) {
+            HttpResponse<R> errorResponse = new HttpResponse<>();
+            errorResponse.statusCode = 401;
+            return errorResponse;
+        }
         return this.perform(input);
     }
 }
