@@ -20,6 +20,13 @@ public abstract class Controller<R, IB, IQ> {
             errorResponse.statusCode = 401;
             return errorResponse;
         }
-        return this.perform(input);
+
+        try {
+            return this.perform(input);
+        } catch (Exception e) {
+            HttpResponse<R> errorResponse = new HttpResponse<>();
+            errorResponse.statusCode = 500;
+            return errorResponse;
+        }
     }
 }
