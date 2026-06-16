@@ -57,6 +57,13 @@ class ControllerTest {
         }
     }
 
+    private static class TestControllerWithError extends Controller<String, TestBody, Void> {
+        @Override
+        public HttpResponse<String> perform(HttpRequest<TestBody, Void> input) {
+            throw new RuntimeException("Internal error");
+        }
+    }
+
     @Test
     void shouldReturnDefaultEmptyValidator() {
         TestControllerWithoutValidator controller = new TestControllerWithoutValidator();
@@ -215,5 +222,46 @@ class ControllerTest {
         assertNotNull(response);
         assertEquals(200, response.statusCode);
         assertEquals("Success", response.body);
+    }
+
+    @Test
+    void shouldReturn500WhenPerformThrowsException() {
+        TestControllerWithError controller = new TestControllerWithError();
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("Valid Body");
+
+        HttpResponse<String> response = controller.handler(request);
+
+        assertNotNull(response);
+        assertEquals(500, response.statusCode);
+        assertNull(response.body);
+    }
+
+    @Test
+    void shouldReturn500OnRuntimeExceptionInPerform() {
+        TestControllerWithError controller = new TestControllerWithError();
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("Test");
+
+        HttpResponse<String> response = controller.handler(request);
+
+        assertNotNull(response);
+        assertEquals(500, response.statusCode);
+    }
+
+    @Test
+    void shouldNotExecutePerformWhenValidationFails() {
+        TestValidator validator = new TestValidator();
+        TestControllerWithValidator controller = new TestControllerWithValidator(validator);
+
+        HttpRequest<TestBody, Void> request = new HttpRequest<>();
+        request.body = new TestBody("");
+
+        HttpResponse<String> response = controller.handler(request);
+
+        assertEquals(401, response.statusCode);
+        assertNull(response.body);
     }
 }
