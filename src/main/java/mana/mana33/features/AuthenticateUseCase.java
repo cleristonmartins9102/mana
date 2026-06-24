@@ -15,7 +15,9 @@ public class AuthenticateUseCase implements Authenticate {
 
     @Override
     public AccountModel authenticate(AuthenticationDTO authenticationDTO) {
-        // TODO: Implement authentication logic
+        String accountId = this.decrypter.decrypt(authenticationDTO.token());
+
+        // TODO: Fetch account from repository using accountId
         return null;
     }
 }
