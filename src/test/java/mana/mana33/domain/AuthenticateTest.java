@@ -12,7 +12,8 @@ class AuthenticateTest {
         @Override
         public AccountModel authenticate(AuthenticationDTO authenticationDTO) {
             if (authenticationDTO.email().equals("test@example.com") &&
-                authenticationDTO.password().equals("password123")) {
+                authenticationDTO.password().equals("password123") &&
+                authenticationDTO.token() != null) {
                 return new AccountModel(
                     "1",
                     "Test",
@@ -30,7 +31,7 @@ class AuthenticateTest {
     @Test
     void shouldReturnAccountModelWhenAuthenticationSucceeds() {
         Authenticate authenticate = new TestAuthenticateImplementation();
-        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password123");
+        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password123", "valid-token");
 
         AccountModel result = authenticate.authenticate(dto);
 
@@ -45,7 +46,7 @@ class AuthenticateTest {
     @Test
     void shouldThrowExceptionWhenCredentialsAreInvalid() {
         Authenticate authenticate = new TestAuthenticateImplementation();
-        AuthenticationDTO dto = new AuthenticationDTO("wrong@example.com", "wrongpassword");
+        AuthenticationDTO dto = new AuthenticationDTO("wrong@example.com", "wrongpassword", "token");
 
         assertThrows(RuntimeException.class, () -> {
             authenticate.authenticate(dto);
@@ -55,7 +56,7 @@ class AuthenticateTest {
     @Test
     void shouldAcceptAuthenticationDTO() {
         Authenticate authenticate = new TestAuthenticateImplementation();
-        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password123");
+        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password123", "token");
 
         assertDoesNotThrow(() -> {
             authenticate.authenticate(dto);
@@ -65,7 +66,7 @@ class AuthenticateTest {
     @Test
     void shouldReturnAccountWithTokens() {
         Authenticate authenticate = new TestAuthenticateImplementation();
-        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password123");
+        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password123", "token");
 
         AccountModel result = authenticate.authenticate(dto);
 

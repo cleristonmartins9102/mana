@@ -32,9 +32,11 @@ class AuthenticateUseCaseTest {
     @Test
     void shouldAcceptAuthenticationDTO() {
         Decrypter decrypter = mock(Decrypter.class);
+        when(decrypter.decrypt(any())).thenReturn("account-id");
+
         AuthenticateUseCase useCase = new AuthenticateUseCase(decrypter);
 
-        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password");
+        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password", "token");
 
         assertDoesNotThrow(() -> {
             useCase.authenticate(dto);
@@ -42,28 +44,43 @@ class AuthenticateUseCaseTest {
     }
 
     @Test
-    void shouldHaveDecrypterDependency() {
+    void shouldCallDecrypterWithToken() {
         Decrypter decrypter = mock(Decrypter.class);
+        when(decrypter.decrypt("test-token")).thenReturn("123");
 
         AuthenticateUseCase useCase = new AuthenticateUseCase(decrypter);
-        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password");
+        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password", "test-token");
 
         useCase.authenticate(dto);
 
-        // Verify decrypter is available (will be used in implementation)
-        assertNotNull(useCase);
+        verify(decrypter, times(1)).decrypt("test-token");
+    }
+
+    @Test
+    void shouldDecryptTokenFromAuthenticationDTO() {
+        Decrypter decrypter = mock(Decrypter.class);
+        when(decrypter.decrypt(any())).thenReturn("account-id-456");
+
+        AuthenticateUseCase useCase = new AuthenticateUseCase(decrypter);
+        AuthenticationDTO dto = new AuthenticationDTO("user@example.com", "pass123", "encrypted-token");
+
+        useCase.authenticate(dto);
+
+        verify(decrypter).decrypt("encrypted-token");
     }
 
     @Test
     void shouldReturnAccountModel() {
         Decrypter decrypter = mock(Decrypter.class);
+        when(decrypter.decrypt(any())).thenReturn("account-id");
+
         AuthenticateUseCase useCase = new AuthenticateUseCase(decrypter);
 
-        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password");
+        AuthenticationDTO dto = new AuthenticationDTO("test@example.com", "password", "token");
 
         AccountModel result = useCase.authenticate(dto);
 
-        // Currently returns null as implementation is pending
+        // Currently returns null as repository implementation is pending
         assertNull(result);
     }
 }
